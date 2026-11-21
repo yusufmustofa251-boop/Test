@@ -1,30 +1,23 @@
-import requests
 import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Link Platoboost (pake link asli lo kalo mau tes full, atau link dummy ini)
-URL = "https://auth.platorelay.com/"
+from main import solve_chain
+import auth_client as AUTH
 
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-}
+# MASUKIN LINK PLATOBOOST FRESH LO DI SINI (Yang ada ?d=...)
+TEST_URL = "https://auth.platorelay.com/a?d=ISI_TICKET_FRESH_LO_DISINI"
 
-print(f"Mencoba nembak: {URL}")
+print("[*] Mencoba nge-bypass dari IP GitHub Actions...")
 try:
-    # Tes koneksi basic
-    res = requests.get(URL, headers=headers, timeout=15)
-    print(f"Status Code: {res.status_code}")
-    print("Response Headers:")
-    for k, v in res.headers.items():
-        print(f"  {k}: {v}")
-        
-    # Kalo Cloudflare nge-block, biasanya muncul challenge HTML atau 403/503
-    if res.status_code in [403, 503]:
-        print("\n❌ KESIMPULAN: IP Datacenter DIBLOKIR Cloudflare (WAF/Challenge).")
-    elif "cf-mitigated" in res.headers:
-        print("\n❌ KESIMPULAN: IP Datacenter DIBLOKIR Cloudflare (cf-mitigated).")
+    ticket = AUTH.extract_ticket(TEST_URL)
+    key, timer = solve_chain(ticket, verbose=True)
+    
+    if key:
+        print(f"\n✅ BERHASIL! Key: {key}")
+        print("Artinya IP GitHub GAK DIBLOKIR dan kita bisa pindah ke sini!")
     else:
-        print("\n✅ KESIMPULAN: Koneksi tembus! (Cek response text di bawah)")
-        print(res.text[:500])
-
+        print("\n❌ GAGAL. IP GitHub diblokir sama API Platoboost atau link expired.")
+        print(f"Alasan: {getattr(timer, 'invalid_reason', 'Unknown')}")
 except Exception as e:
-    print(f"\n❌ ERROR JARINGAN: {e}")
+    print(f"\n❌ ERROR: {e}")
