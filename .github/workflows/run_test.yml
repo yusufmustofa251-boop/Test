@@ -1,0 +1,21 @@
+name: Test Datacenter IP
+on:
+  workflow_dispatch: # Biar bisa diklik manual
+
+jobs:
+  run-test:
+    runs-on: ubuntu-latest # Ini jalan di server Microsoft Azure
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install requests
+        run: pip install requests
+        
+      - name: Run Test Script
+        run: python test.py
